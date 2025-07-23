@@ -21,7 +21,9 @@ describe('Home Page', () => {
 
   test('renders header navigation buttons', () => {
     render(<Home />)
-    expect(screen.getByText('Log In')).toBeInTheDocument()
+    const loginLink = screen.getByText('Log In')
+    expect(loginLink).toBeInTheDocument()
+    expect(loginLink.closest('a')).toHaveAttribute('href', '/login')
     expect(screen.getByText('Sign Up')).toBeInTheDocument()
     expect(screen.getByText('Sign Up')).toHaveClass('bg-green-600', 'text-white')
   })

@@ -26,9 +26,9 @@ export default function Home() {
           </Link>
         </div>
         <div className="flex gap-4">
-          <button className="text-gray-700 px-4 py-2 hover:text-gray-900">
+          <Link href="/login" className="text-gray-700 px-4 py-2 hover:text-gray-900 transition-colors">
             Log In
-          </button>
+          </Link>
           <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
             Sign Up
           </button>
