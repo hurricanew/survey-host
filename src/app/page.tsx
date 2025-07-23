@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
+import Link from 'next/link'
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -14,9 +15,15 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="flex justify-between items-center p-6">
-        <div className="text-green-600 text-3xl font-bold">
-          SurveyHost
+      <header className="flex justify-between items-center px-6 py-4">
+        <div className="h-10">
+          <Link href="/" className="block h-full">
+            <img 
+              src="/logo.svg" 
+              alt="SurveyHost Logo" 
+              className="h-full w-auto hover:opacity-80 transition-opacity cursor-pointer"
+            />
+          </Link>
         </div>
         <div className="flex gap-4">
           <button className="text-gray-700 px-4 py-2 hover:text-gray-900">

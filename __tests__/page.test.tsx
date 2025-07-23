@@ -5,8 +5,18 @@ import '@testing-library/jest-dom'
 describe('Home Page', () => {
   test('renders SurveyHost logo in header', () => {
     render(<Home />)
-    expect(screen.getByText('SurveyHost')).toBeInTheDocument()
-    expect(screen.getByText('SurveyHost')).toHaveClass('text-green-600', 'text-3xl', 'font-bold')
+    const logo = screen.getByAltText('SurveyHost Logo')
+    expect(logo).toBeInTheDocument()
+    expect(logo).toHaveAttribute('src', '/logo.svg')
+    expect(logo).toHaveClass('h-full', 'w-auto', 'hover:opacity-80', 'transition-opacity', 'cursor-pointer')
+  })
+
+  test('logo is clickable and links to home page', () => {
+    render(<Home />)
+    const logoLink = screen.getByAltText('SurveyHost Logo').closest('a')
+    expect(logoLink).toBeInTheDocument()
+    expect(logoLink).toHaveAttribute('href', '/')
+    expect(logoLink).toHaveClass('block', 'h-full')
   })
 
   test('renders header navigation buttons', () => {
@@ -50,7 +60,7 @@ describe('Home Page', () => {
 
   test('has white background', () => {
     render(<Home />)
-    const mainContainer = screen.getByText('SurveyHost').closest('div')?.parentElement?.parentElement
+    const mainContainer = document.querySelector('.min-h-screen')
     expect(mainContainer).toHaveClass('min-h-screen', 'bg-white')
   })
 
