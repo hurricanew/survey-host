@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import Login from '@/app/login/page'
 import '@testing-library/jest-dom'
 
@@ -68,11 +68,16 @@ describe('Login Page', () => {
     expect(passwordInput).toHaveStyle('border-bottom-color: #1c5d8c')
   })
 
-  test('google login button contains Google icon', () => {
+  test('google login button triggers OAuth flow', () => {
+    // Mock window.location.href
+    delete (window as any).location
+    ;(window as any).location = { href: '' }
+
     render(<Login />)
     const googleButton = screen.getByText('Log in with Google')
-    const svgIcon = googleButton.querySelector('svg')
-    expect(svgIcon).toBeInTheDocument()
-    expect(svgIcon).toHaveClass('w-5', 'h-5')
+    
+    fireEvent.click(googleButton)
+    
+    expect(window.location.href).toBe('/api/auth/google')
   })
 })
