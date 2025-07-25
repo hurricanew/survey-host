@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface UserInfo {
   id: string
@@ -29,7 +30,7 @@ export default function UserPage() {
       } else {
         setError('Failed to fetch user information')
       }
-    } catch (err) {
+    } catch {
       setError('Error fetching user information')
     } finally {
       setLoading(false)
@@ -95,9 +96,11 @@ export default function UserPage() {
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {/* Profile Header */}
           <div className="bg-gradient-to-r from-green-500 to-green-600 px-8 py-12 text-center">
-            <img
+            <Image
               src={user.picture}
               alt={user.name}
+              width={96}
+              height={96}
               className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-lg"
             />
             <h1 className="text-3xl font-bold text-white mb-2">{user.name}</h1>
@@ -160,9 +163,11 @@ export default function UserPage() {
             <div className="mt-8 pt-8 border-t border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Profile Picture</h3>
               <div className="flex items-center gap-4">
-                <img
+                <Image
                   src={user.picture}
                   alt={user.name}
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-full border-2 border-gray-200"
                 />
                 <div>

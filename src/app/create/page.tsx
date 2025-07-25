@@ -1,10 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
+import { useState } from 'react'
 
 export default function CreatePage() {
   const { user, loading, logout } = useAuth()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [slideName, setSlideName] = useState('')
 
   if (loading) {
     return (
@@ -31,9 +35,11 @@ export default function CreatePage() {
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <img
+              <Image
                 src={user.picture}
                 alt={user.name}
+                width={32}
+                height={32}
                 className="w-8 h-8 rounded-full"
               />
               <span className="text-gray-700 text-sm">{user.name}</span>
@@ -115,11 +121,68 @@ export default function CreatePage() {
           </p>
 
           {/* Action Button */}
-          <button className="bg-green-600 hover:bg-green-700 text-white text-xl font-medium py-4 px-12 rounded-xl transition-colors shadow-lg hover:shadow-xl">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-green-600 hover:bg-green-700 text-white text-xl font-medium py-4 px-12 rounded-xl transition-colors shadow-lg hover:shadow-xl"
+          >
             Start Creating
           </button>
         </div>
       </main>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-6 z-50">
+          <div className="bg-white rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              Give your slide a name
+            </h2>
+            
+            <input
+              type="text"
+              placeholder="Slide name"
+              value={slideName}
+              onChange={(e) => setSlideName(e.target.value)}
+              className="w-full p-4 border border-gray-200 rounded-xl mb-6 text-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              autoFocus
+            />
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8 flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <p className="text-blue-800 text-sm">
+                Anyone with the code or link can participate
+              </p>
+            </div>
+            
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => {
+                  setIsModalOpen(false)
+                  setSlideName('')
+                }}
+                className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // TODO: Handle slide creation
+                  console.log('Creating slide:', slideName)
+                  setIsModalOpen(false)
+                  setSlideName('')
+                }}
+                className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors"
+              >
+                Create slide
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

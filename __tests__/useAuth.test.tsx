@@ -26,14 +26,17 @@ const mockUserResponse = {
 describe('useAuth Hook', () => {
   beforeEach(() => {
     ;(fetch as jest.Mock).mockClear()
+    ;(fetch as jest.Mock).mockReset()
     mockPush.mockClear()
   })
 
   test('fetches and sets user data on successful authentication', async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockUserResponse
-    })
+    ;(fetch as jest.Mock).mockImplementation(() => 
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockUserResponse)
+      })
+    )
 
     const { result } = renderHook(() => useAuth())
 
@@ -44,15 +47,19 @@ describe('useAuth Hook', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.user).toEqual(mockUserResponse.user)
+    await waitFor(() => {
+      expect(result.current.user).toEqual(mockUserResponse.user)
+    })
     expect(result.current.error).toBe('')
   })
 
   test('redirects to login when authentication fails', async () => {
-    ;(fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      status: 401
-    })
+    ;(fetch as jest.Mock).mockImplementation(() => 
+      Promise.resolve({
+        ok: false,
+        status: 401
+      })
+    )
 
     const { result } = renderHook(() => useAuth())
 
@@ -66,7 +73,9 @@ describe('useAuth Hook', () => {
   })
 
   test('handles network errors gracefully', async () => {
-    ;(fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'))
+    ;(fetch as jest.Mock).mockImplementation(() => 
+      Promise.reject(new Error('Network error'))
+    )
 
     const { result } = renderHook(() => useAuth())
 

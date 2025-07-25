@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -18,9 +19,11 @@ export default function Home() {
       <header className="flex justify-between items-center px-6 py-4">
         <div className="h-10">
           <Link href="/" className="block h-full">
-            <img 
+            <Image 
               src="/logo.svg" 
               alt="SurveyHost Logo" 
+              width={160}
+              height={40}
               className="h-full w-auto hover:opacity-80 transition-opacity cursor-pointer"
             />
           </Link>

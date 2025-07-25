@@ -9,7 +9,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string
+      email: string
+      name: string
+      picture: string
+      verified_email: boolean
+    }
     return NextResponse.json({
       user: {
         id: decoded.id,
@@ -19,7 +25,7 @@ export async function GET(request: NextRequest) {
         verified_email: decoded.verified_email
       }
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
   }
 }

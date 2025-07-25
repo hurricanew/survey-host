@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
       path: '/'
     })
 
-    // Redirect to user page
-    const response = NextResponse.redirect(`${process.env.NEXTAUTH_URL}/user`)
+    // Redirect to create page
+    const response = NextResponse.redirect(`${process.env.NEXTAUTH_URL}/create`)
     response.headers.set('Set-Cookie', cookie)
     
     return response

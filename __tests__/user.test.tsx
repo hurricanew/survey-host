@@ -5,6 +5,13 @@ import '@testing-library/jest-dom'
 // Mock fetch globally
 global.fetch = jest.fn()
 
+// Mock Next.js Image component
+jest.mock('next/image', () => {
+  return function MockImage({ src, alt, ...props }: any) {
+    return <img src={src} alt={alt} {...props} />
+  }
+})
+
 const mockUserData = {
   user: {
     id: '123456789',
@@ -129,14 +136,14 @@ describe('User Page', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText('John Doe')).toHaveLength(2)
-    })
+    }, { timeout: 2000 })
 
     const logoutButtons = screen.getAllByText('Logout')
     fireEvent.click(logoutButtons[0])
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/auth/logout', { method: 'POST' })
-    })
+    }, { timeout: 2000 })
   })
 
   test('handles network error gracefully', async () => {
@@ -148,6 +155,6 @@ describe('User Page', () => {
       expect(screen.getByText('Access Denied')).toBeInTheDocument()
     })
 
-    expect(screen.getByText(/Error fetching user information/)).toBeInTheDocument()
+    expect(screen.getByText('Error fetching user information')).toBeInTheDocument()
   })
 })

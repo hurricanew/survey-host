@@ -14,6 +14,13 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
+// Mock Next.js Image component
+jest.mock('next/image', () => {
+  return function MockImage({ src, alt, ...props }: any) {
+    return <img src={src} alt={alt} {...props} />
+  }
+})
+
 const mockUser = {
   id: '123456789',
   email: 'test@example.com',
@@ -158,5 +165,118 @@ describe('Create Page', () => {
     
     const mainContent = screen.getByText('Create').closest('main')
     expect(mainContent).toHaveClass('min-h-[calc(100vh-80px)]', 'px-6')
+  })
+
+  test('opens modal when Start Creating button is clicked', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    expect(screen.getByText('Give your slide a name')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Slide name')).toBeInTheDocument()
+    expect(screen.getByText('Anyone with the code or link can participate')).toBeInTheDocument()
+    expect(screen.getByText('Cancel')).toBeInTheDocument()
+    expect(screen.getByText('Create slide')).toBeInTheDocument()
+  })
+
+  test('closes modal when Cancel button is clicked', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    expect(screen.getByText('Give your slide a name')).toBeInTheDocument()
+    
+    // Close modal
+    const cancelButton = screen.getByText('Cancel')
+    fireEvent.click(cancelButton)
+    
+    expect(screen.queryByText('Give your slide a name')).not.toBeInTheDocument()
+  })
+
+  test('closes modal when Create slide button is clicked', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    // Add text to input
+    const input = screen.getByPlaceholderText('Slide name')
+    fireEvent.change(input, { target: { value: 'My Test Slide' } })
+    
+    // Click create
+    const createButton = screen.getByText('Create slide')
+    fireEvent.click(createButton)
+    
+    expect(screen.queryByText('Give your slide a name')).not.toBeInTheDocument()
+  })
+
+  test('input field works correctly in modal', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    const input = screen.getByPlaceholderText('Slide name')
+    expect(input).toHaveValue('')
+    
+    fireEvent.change(input, { target: { value: 'My Test Slide' } })
+    expect(input).toHaveValue('My Test Slide')
+  })
+
+  test('modal has proper styling and layout', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    const modal = screen.getByText('Give your slide a name').closest('div')
+    expect(modal).toHaveClass('bg-white', 'rounded-3xl', 'p-8')
+    
+    const input = screen.getByPlaceholderText('Slide name')
+    expect(input).toHaveClass('w-full', 'p-4', 'border', 'border-gray-200', 'rounded-xl')
+    
+    const createButton = screen.getByText('Create slide')
+    expect(createButton).toHaveClass('bg-green-600', 'hover:bg-green-700', 'text-white')
   })
 })

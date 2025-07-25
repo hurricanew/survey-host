@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface UserInfo {
@@ -17,27 +17,28 @@ export function useAuth() {
   const [error, setError] = useState('')
   const router = useRouter()
 
-  useEffect(() => {
-    fetchUserInfo()
-  }, [])
-
-  const fetchUserInfo = async () => {
+  const fetchUserInfo = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/user')
       if (response.ok) {
         const data = await response.json()
         setUser(data.user)
+        setError('')
       } else {
         setError('Authentication required')
         router.push('/login')
       }
-    } catch (err) {
+    } catch {
       setError('Authentication error')
       router.push('/login')
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    fetchUserInfo()
+  }, [fetchUserInfo])
 
   const logout = async () => {
     try {
