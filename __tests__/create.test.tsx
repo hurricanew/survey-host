@@ -210,7 +210,7 @@ describe('Create Page', () => {
     expect(screen.queryByText('Give your slide a name')).not.toBeInTheDocument()
   })
 
-  test('closes modal when Create slide button is clicked', () => {
+  test('closes modal when Create slide button is clicked with valid inputs', () => {
     mockUseAuth.mockReturnValue({
       user: mockUser,
       loading: false,
@@ -227,6 +227,15 @@ describe('Create Page', () => {
     // Add text to input
     const input = screen.getByPlaceholderText('Slide name')
     fireEvent.change(input, { target: { value: 'My Test Slide' } })
+    
+    // Add file
+    const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement
+    Object.defineProperty(fileInput, 'files', {
+      value: [file],
+      writable: false,
+    })
+    fireEvent.change(fileInput)
     
     // Click create
     const createButton = screen.getByText('Create slide')
@@ -274,9 +283,203 @@ describe('Create Page', () => {
     expect(modal).toHaveClass('bg-white', 'rounded-3xl', 'p-8')
     
     const input = screen.getByPlaceholderText('Slide name')
-    expect(input).toHaveClass('w-full', 'p-4', 'border', 'border-gray-200', 'rounded-xl')
+    expect(input).toHaveClass('w-full', 'p-4', 'border', 'rounded-xl')
     
     const createButton = screen.getByText('Create slide')
     expect(createButton).toHaveClass('bg-green-600', 'hover:bg-green-700', 'text-white')
+  })
+
+  test('shows file upload field in modal', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    expect(screen.getByText('Upload File (.txt only)')).toBeInTheDocument()
+    expect(screen.getByText('Click to upload a .txt file')).toBeInTheDocument()
+    
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement
+    expect(fileInput).toHaveAttribute('type', 'file')
+    expect(fileInput).toHaveAttribute('accept', '.txt,text/plain')
+  })
+
+  test('validates required slide name field', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    // Try to create without slide name
+    const createButton = screen.getByText('Create slide')
+    fireEvent.click(createButton)
+    
+    expect(screen.getByText('Slide name is required')).toBeInTheDocument()
+    expect(screen.getByText('Please upload a .txt file')).toBeInTheDocument()
+  })
+
+  test('validates required file upload field', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    // Add slide name but no file
+    const input = screen.getByPlaceholderText('Slide name')
+    fireEvent.change(input, { target: { value: 'Test Slide' } })
+    
+    // Try to create without file
+    const createButton = screen.getByText('Create slide')
+    fireEvent.click(createButton)
+    
+    expect(screen.getByText('Please upload a .txt file')).toBeInTheDocument()
+    expect(screen.queryByText('Slide name is required')).not.toBeInTheDocument()
+  })
+
+  test('clears validation errors when fields are filled', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    // Try to create without inputs to trigger errors
+    const createButton = screen.getByText('Create slide')
+    fireEvent.click(createButton)
+    
+    expect(screen.getByText('Slide name is required')).toBeInTheDocument()
+    
+    // Add slide name - should clear the error
+    const input = screen.getByPlaceholderText('Slide name')
+    fireEvent.change(input, { target: { value: 'Test Slide' } })
+    
+    expect(screen.queryByText('Slide name is required')).not.toBeInTheDocument()
+  })
+
+  test('handles txt file upload correctly', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    // Create a mock file
+    const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement
+    
+    // Upload the file
+    Object.defineProperty(fileInput, 'files', {
+      value: [file],
+      writable: false,
+    })
+    fireEvent.change(fileInput)
+    
+    // Should show the filename
+    expect(screen.getByText('test.txt')).toBeInTheDocument()
+  })
+
+  test('rejects non-txt files', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    // Create a mock non-txt file
+    const file = new File(['test content'], 'test.pdf', { type: 'application/pdf' })
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement
+    
+    // Upload the file
+    Object.defineProperty(fileInput, 'files', {
+      value: [file],
+      writable: false,
+    })
+    fireEvent.change(fileInput)
+    
+    // Should show error message
+    expect(screen.getByText('Please select a .txt file')).toBeInTheDocument()
+  })
+
+  test('successfully creates slide with valid inputs', () => {
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      error: '',
+      logout: jest.fn()
+    })
+
+    render(<CreatePage />)
+    
+    // Open modal
+    const startButton = screen.getByText('Start Creating')
+    fireEvent.click(startButton)
+    
+    // Fill in both required fields
+    const input = screen.getByPlaceholderText('Slide name')
+    fireEvent.change(input, { target: { value: 'Test Slide' } })
+    
+    const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement
+    Object.defineProperty(fileInput, 'files', {
+      value: [file],
+      writable: false,
+    })
+    fireEvent.change(fileInput)
+    
+    // Create slide
+    const createButton = screen.getByText('Create slide')
+    fireEvent.click(createButton)
+    
+    // Should close modal and log creation
+    expect(screen.queryByText('Give your slide a name')).not.toBeInTheDocument()
+    expect(consoleSpy).toHaveBeenCalledWith('Creating slide:', 'Test Slide', 'with file:', 'test.txt')
+    
+    consoleSpy.mockRestore()
   })
 })

@@ -9,6 +9,55 @@ export default function CreatePage() {
   const { user, loading, logout } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [slideName, setSlideName] = useState('')
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [errors, setErrors] = useState<{slideName?: string, file?: string}>({})
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        setUploadedFile(file)
+        setErrors(prev => ({ ...prev, file: undefined }))
+      } else {
+        setUploadedFile(null)
+        setErrors(prev => ({ ...prev, file: 'Please select a .txt file' }))
+        event.target.value = '' // Clear the input
+      }
+    }
+  }
+
+  const validateForm = () => {
+    const newErrors: {slideName?: string, file?: string} = {}
+    
+    if (!slideName.trim()) {
+      newErrors.slideName = 'Slide name is required'
+    }
+    
+    if (!uploadedFile) {
+      newErrors.file = 'Please upload a .txt file'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleCreateSlide = () => {
+    if (validateForm()) {
+      // TODO: Handle slide creation
+      console.log('Creating slide:', slideName, 'with file:', uploadedFile?.name)
+      setIsModalOpen(false)
+      setSlideName('')
+      setUploadedFile(null)
+      setErrors({})
+    }
+  }
+
+  const handleCancel = () => {
+    setIsModalOpen(false)
+    setSlideName('')
+    setUploadedFile(null)
+    setErrors({})
+  }
 
   if (loading) {
     return (
@@ -138,14 +187,68 @@ export default function CreatePage() {
               Give your slide a name
             </h2>
             
-            <input
-              type="text"
-              placeholder="Slide name"
-              value={slideName}
-              onChange={(e) => setSlideName(e.target.value)}
-              className="w-full p-4 border border-gray-200 rounded-xl mb-6 text-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-              autoFocus
-            />
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder="Slide name"
+                value={slideName}
+                onChange={(e) => {
+                  setSlideName(e.target.value)
+                  if (errors.slideName) {
+                    setErrors(prev => ({ ...prev, slideName: undefined }))
+                  }
+                }}
+                className={`w-full p-4 border rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent ${
+                  errors.slideName ? 'border-red-500' : 'border-gray-200'
+                }`}
+                autoFocus
+              />
+              {errors.slideName && (
+                <p className="text-red-500 text-sm mt-2">{errors.slideName}</p>
+              )}
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload File (.txt only)
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".txt,text/plain"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label
+                  htmlFor="file-upload"
+                  className={`w-full p-4 border-2 border-dashed rounded-xl cursor-pointer transition-colors hover:bg-gray-50 flex items-center justify-center ${
+                    errors.file ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
+                >
+                  <div className="text-center">
+                    {uploadedFile ? (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm font-medium">{uploadedFile.name}</span>
+                      </div>
+                    ) : (
+                      <div className="text-gray-500">
+                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="text-sm">Click to upload a .txt file</p>
+                      </div>
+                    )}
+                  </div>
+                </label>
+              </div>
+              {errors.file && (
+                <p className="text-red-500 text-sm mt-2">{errors.file}</p>
+              )}
+            </div>
             
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8 flex items-center gap-3">
               <div className="flex-shrink-0">
@@ -160,21 +263,13 @@ export default function CreatePage() {
             
             <div className="flex justify-end gap-4">
               <button
-                onClick={() => {
-                  setIsModalOpen(false)
-                  setSlideName('')
-                }}
+                onClick={handleCancel}
                 className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  // TODO: Handle slide creation
-                  console.log('Creating slide:', slideName)
-                  setIsModalOpen(false)
-                  setSlideName('')
-                }}
+                onClick={handleCreateSlide}
                 className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors"
               >
                 Create slide
