@@ -50,7 +50,8 @@ export async function GET(request: NextRequest) {
         name: user.name,
         picture: user.picture,
         verified_email: user.verified_email,
-        userId: user.id // Include database user ID
+        userId: user.id, // Include database user ID
+        hashkey: user.hashkey // Include user hashkey for routing
       },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }

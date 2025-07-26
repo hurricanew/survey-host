@@ -9,6 +9,8 @@ interface UserInfo {
   name: string
   picture: string
   verified_email: boolean
+  userId: number
+  hashkey: string
 }
 
 export function useAuth() {

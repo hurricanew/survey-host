@@ -1,0 +1,33 @@
+Customer Satisfaction Survey
+
+Please help us improve our service by answering these questions:
+
+1. How satisfied are you with our customer service?
+   a) Very satisfied
+   b) Satisfied  
+   c) Neutral
+   d) Dissatisfied
+   e) Very dissatisfied
+
+2. How likely are you to recommend our product to others?
+   a) Very likely
+   b) Likely
+   c) Neutral
+   d) Unlikely
+   e) Very unlikely
+
+3. What is the most important factor when choosing our service?
+   a) Price
+   b) Quality
+   c) Customer support
+   d) Features
+   e) Brand reputation
+
+4. How often do you use our product?
+   a) Daily
+   b) Weekly
+   c) Monthly
+   d) Rarely
+   e) Never
+
+Thank you for your feedback!

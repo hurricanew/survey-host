@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
       name: string
       picture: string
       verified_email: boolean
+      userId: number
+      hashkey: string
     }
     return NextResponse.json({
       user: {
@@ -22,7 +24,9 @@ export async function GET(request: NextRequest) {
         email: decoded.email,
         name: decoded.name,
         picture: decoded.picture,
-        verified_email: decoded.verified_email
+        verified_email: decoded.verified_email,
+        userId: decoded.userId,
+        hashkey: decoded.hashkey
       }
     })
   } catch {

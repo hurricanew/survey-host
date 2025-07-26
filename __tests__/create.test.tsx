@@ -8,9 +8,10 @@ jest.mock('../src/hooks/useAuth')
 const mockUseAuth = jest.spyOn(useAuthModule, 'useAuth')
 
 // Mock Next.js router
+const mockPush = jest.fn()
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: jest.fn(),
+    push: mockPush,
   }),
 }))
 
@@ -210,9 +211,12 @@ describe('Create Page', () => {
     expect(screen.queryByText('Give your slide a name')).not.toBeInTheDocument()
   })
 
-  test('closes modal when Create slide button is clicked with valid inputs', () => {
+  test('shows creating state when Create slide button is clicked with valid inputs', async () => {
+    // Mock fetch to return a pending promise that never resolves during test
+    global.fetch = jest.fn().mockImplementation(() => new Promise(() => {})) // Never resolves
+    
     mockUseAuth.mockReturnValue({
-      user: mockUser,
+      user: { ...mockUser, hashkey: 'c672b2c1' },
       loading: false,
       error: '',
       logout: jest.fn()
@@ -241,7 +245,14 @@ describe('Create Page', () => {
     const createButton = screen.getByText('Create slide')
     fireEvent.click(createButton)
     
-    expect(screen.queryByText('Give your slide a name')).not.toBeInTheDocument()
+    // Should show creating state (modal stays open during processing)
+    await waitFor(() => {
+      expect(screen.getByText('Creating Survey...')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Give your slide a name')).toBeInTheDocument()
+    
+    // Cleanup
+    jest.restoreAllMocks()
   })
 
   test('input field works correctly in modal', () => {
@@ -444,11 +455,15 @@ describe('Create Page', () => {
     expect(screen.getByText('Please select a .txt file')).toBeInTheDocument()
   })
 
-  test('successfully creates slide with valid inputs', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+  test('calls API when creating survey with valid inputs', async () => {
+    // Mock successful fetch response
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ userHashkey: 'c672b2c1' })
+    })
     
     mockUseAuth.mockReturnValue({
-      user: mockUser,
+      user: { ...mockUser, hashkey: 'c672b2c1' },
       loading: false,
       error: '',
       logout: jest.fn()
@@ -476,10 +491,20 @@ describe('Create Page', () => {
     const createButton = screen.getByText('Create slide')
     fireEvent.click(createButton)
     
-    // Should close modal and log creation
-    expect(screen.queryByText('Give your slide a name')).not.toBeInTheDocument()
-    expect(consoleSpy).toHaveBeenCalledWith('Creating slide:', 'Test Slide', 'with file:', 'test.txt')
+    // Should call API
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/create-survey', {
+        method: 'POST',
+        body: expect.any(FormData)
+      })
+    })
     
-    consoleSpy.mockRestore()
+    // Should redirect via router.push
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/c672b2c1')
+    })
+    
+    // Cleanup
+    jest.restoreAllMocks()
   })
 })

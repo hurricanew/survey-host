@@ -4,13 +4,16 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function CreatePage() {
   const { user, loading, logout } = useAuth()
+  const router = useRouter()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [slideName, setSlideName] = useState('')
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [errors, setErrors] = useState<{slideName?: string, file?: string}>({})
+  const [isCreating, setIsCreating] = useState(false)
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -41,14 +44,57 @@ export default function CreatePage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleCreateSlide = () => {
-    if (validateForm()) {
-      // TODO: Handle slide creation
-      console.log('Creating slide:', slideName, 'with file:', uploadedFile?.name)
-      setIsModalOpen(false)
-      setSlideName('')
-      setUploadedFile(null)
-      setErrors({})
+  const handleCreateSlide = async () => {
+    if (!validateForm()) return
+
+    setIsCreating(true)
+    
+    try {
+      // First, check if user has hashkey - if not, refresh token
+      if (!user?.hashkey) {
+        console.log('User missing hashkey, refreshing token...')
+        const refreshResponse = await fetch('/api/refresh-token', {
+          method: 'POST'
+        })
+        
+        if (refreshResponse.ok) {
+          // Token refreshed, reload page to get updated user data
+          window.location.reload()
+          return
+        }
+      }
+
+      const formData = new FormData()
+      formData.append('surveyName', slideName)
+      formData.append('file', uploadedFile!)
+
+      const response = await fetch('/api/create-survey', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create survey')
+      }
+
+      const data = await response.json()
+      console.log('Survey creation response:', data)
+      
+      // Redirect to user's hashkey page
+      if (data.userHashkey) {
+        router.push(`/${data.userHashkey}`)
+      } else {
+        throw new Error('No user hashkey returned from server')
+      }
+      
+    } catch (error) {
+      console.error('Error creating survey:', error)
+      setErrors({ 
+        slideName: error instanceof Error ? error.message : 'Failed to create survey' 
+      })
+    } finally {
+      setIsCreating(false)
     }
   }
 
@@ -270,9 +316,13 @@ export default function CreatePage() {
               </button>
               <button
                 onClick={handleCreateSlide}
-                className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors"
+                disabled={isCreating}
+                className="px-8 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors flex items-center gap-2"
               >
-                Create slide
+                {isCreating && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                )}
+                {isCreating ? 'Creating Survey...' : 'Create slide'}
               </button>
             </div>
           </div>
