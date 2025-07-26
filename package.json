@@ -11,12 +11,16 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@types/pg": "^8.15.4",
     "cookie": "^1.0.2",
+    "dotenv": "^17.2.1",
     "googleapis": "^153.0.0",
     "jsonwebtoken": "^9.0.2",
     "next": "15.4.3",
+    "pg": "^8.16.3",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
